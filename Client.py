@@ -10,62 +10,57 @@ sock.connect(server)
 
 def send(message):
     global sock, server
-    print(f'Sending: \'{message}\'')
+    print(f'Sending:\n{message}')
     sock.send(message.encode())
     response, _ = sock.recvfrom(1024)
     return response.decode()
-    # return 'OK'
 
 
 print('Client Starting...')
 while True:
     command = input().lower()
-    commandParts = command.split(' ')
-    if commandParts[0] == 'signup' and len(commandParts) == 3:
-        messageToSend = {
+    command_parts = command.split(' ')
+    if command_parts[0] == 'signup' and len(command_parts) == 3:
+        message_to_send = {
             'type': 'signup',
-            'username': commandParts[1],
-            'password': commandParts[2],
+            'username': command_parts[1],
+            'password': command_parts[2],
         }
-        answer = send(json.dumps(messageToSend))
-        print(answer)
-    elif commandParts[0] == 'login' and len(commandParts) == 3:
-        messageToSend = {
+
+    elif command_parts[0] == 'login' and len(command_parts) == 3:
+        message_to_send = {
             'type': 'login',
-            'username': commandParts[1],
-            'password': commandParts[2],
+            'username': command_parts[1],
+            'password': command_parts[2],
         }
-        answer = send(json.dumps(messageToSend))
-        print(answer)
-    elif commandParts[0] == 'online' and len(commandParts) == 1:
-        messageToSend = {
+
+    elif command_parts[0] == 'online' and len(command_parts) == 1:
+        message_to_send = {
             'type': 'online',
         }
-        answer = send(json.dumps(messageToSend))
-        print(answer)
-    elif commandParts[0] == 'newgroup' and len(commandParts) == 2:
-        messageToSend = {
+
+    elif command_parts[0] == 'newgroup' and len(command_parts) == 2:
+        message_to_send = {
             'type': 'online',
-            'name': commandParts[1],
+            'name': command_parts[1],
         }
-        answer = send(json.dumps(messageToSend))
-        print(answer)
-    elif commandParts[0] == 'msgg' and len(commandParts) >= 3:
-        messageToSend = {
+
+    elif command_parts[0] == 'msgg' and len(command_parts) >= 3:
+        message_to_send = {
             'type': 'msgg',
-            'group': commandParts[1],
-            'msg': ' '.join(commandParts[2:]),
+            'group': command_parts[1],
+            'msg': ' '.join(command_parts[2:]),
         }
-        answer = send(json.dumps(messageToSend))
-        print(answer)
-    elif commandParts[0] == 'msgd' and len(commandParts) >= 3:
-        messageToSend = {
+
+    elif command_parts[0] == 'msgd' and len(command_parts) >= 3:
+        message_to_send = {
             'type': 'msgg',
-            'contact': commandParts[1],
-            'msg': ' '.join(commandParts[2:]),
+            'contact': command_parts[1],
+            'msg': ' '.join(command_parts[2:]),
         }
-        answer = send(json.dumps(messageToSend))
-        print(answer)
-    elif commandParts[0] == 'exit':
-        wrap_sock.close()
+    answer = send(json.dumps(message_to_send))
+    print(f'Receiving:\n{answer}')
+
+    if command_parts[0] == 'exit':
+        sock.close()
         break
