@@ -1,8 +1,20 @@
 import json
+import ssl
+import socket
+
+HOST, PORT = '127.0.0.1', 4434
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.settimeout(10)
+wrappedSocket = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, ciphers="ADH-AES256-SHA")
+
+wrappedSocket.connect((HOST, PORT))
 
 def send(message):
     print(f'Sending: \'{message}\'')
-    return 'OK'
+    wrappedSocket.send(message)
+    return wrappedSocket.recv(1280)
+    # return 'OK'
 
 
 
@@ -56,5 +68,6 @@ while True:
         answer = send(json.dumps(messageToSend))
         print(answer)
     elif commandParts[0] == 'exit':
+        wrappedSocket.close()
         break
 
