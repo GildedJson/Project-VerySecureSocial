@@ -11,7 +11,22 @@ welcome_sock.bind(('', PORT))
 # server begins listening for incoming TCP requests
 welcome_sock.listen()
 
+def answer(sender, message):
+    pass
+
+def decode_with_token(encoded_msg):
+    return encoded_msg #TODO
+
+def encode_with_token(msg):
+    return msg #TODO
+
 print('Server Starting...')
+groups = None
+with open('GroupData.txt', 'r') as group_data_file:
+    groups = json.loads(group_data_file.read())
+
+
+print('Server Listening...')
 while True:
     connection_sock, client = welcome_sock.accept()
     command = connection_sock.recv(1024).decode()
