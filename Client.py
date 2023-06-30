@@ -1,27 +1,19 @@
 import json
-import ssl
 import socket
 
 HOST, PORT = 'localhost', 8080
 server = (HOST, PORT)
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.settimeout(60)
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect(server)
 
-
-# wrappedSocket = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, ciphers="ADH-AES256-SHA")
-# wrappedSocket.connect((HOST, PORT))
 
 def send(message):
     global sock, server
     print(f'Sending: \'{message}\'')
-    # wrappedSocket.send(message)
-    sock.sendto(message.encode(), server)
-    print('done')
-
-    server_answer, _ = sock.recvfrom(1024)
-    return server_answer.decode()
-    # return wrappedSocket.recv(1280)
+    sock.send(message.encode())
+    response, _ = sock.recvfrom(1024)
+    return response.decode()
     # return 'OK'
 
 
@@ -75,5 +67,5 @@ while True:
         answer = send(json.dumps(messageToSend))
         print(answer)
     elif commandParts[0] == 'exit':
-        wrappedSocket.close()
+        wrap_sock.close()
         break
