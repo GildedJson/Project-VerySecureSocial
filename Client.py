@@ -2,23 +2,30 @@ import json
 import ssl
 import socket
 
-HOST, PORT = '127.0.0.1', 4434
+HOST, PORT = 'localhost', 8080
+server = (HOST, PORT)
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.settimeout(10)
-wrappedSocket = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, ciphers="ADH-AES256-SHA")
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.settimeout(60)
 
-wrappedSocket.connect((HOST, PORT))
+
+# wrappedSocket = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, ciphers="ADH-AES256-SHA")
+# wrappedSocket.connect((HOST, PORT))
 
 def send(message):
+    global sock, server
     print(f'Sending: \'{message}\'')
-    wrappedSocket.send(message)
-    return wrappedSocket.recv(1280)
+    # wrappedSocket.send(message)
+    sock.sendto(message.encode(), server)
+    print('done')
+
+    server_answer, _ = sock.recvfrom(1024)
+    return server_answer.decode()
+    # return wrappedSocket.recv(1280)
     # return 'OK'
 
 
-
-
+print('Client Starting...')
 while True:
     command = input().lower()
     commandParts = command.split(' ')
@@ -70,4 +77,3 @@ while True:
     elif commandParts[0] == 'exit':
         wrappedSocket.close()
         break
-
