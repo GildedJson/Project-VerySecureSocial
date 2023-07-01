@@ -17,5 +17,11 @@
         "members": [
             "a"
         ]
+    },
+    "g5": {
+        "admin": "a",
+        "members": [
+            "a"
+        ]
     }
 }
