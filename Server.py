@@ -124,10 +124,11 @@ def handle_client(connection_sock):
     # ssl_socket = ssl_context.wrap_socket(connection_sock, server_side=True)
 
     # Receive the encryption key from the client
-    client_server_session_key = rsa_decryptor.decrypt(connection_sock.recv(1024).decode())
-    client_server_session_key_cipher_suite = Fernet(client_server_session_key)
+    session_key = rsa_decryptor.decrypt(connection_sock.recv(1024).decode())
+    cipher_suite = Fernet(session_key)
     connection_sock.send('send encoded timestamp'.encode())
-    received_time_stamp = client_server_session_key_cipher_suite.decrypt(connection_sock.recv(1024).decode())
+
+    received_time_stamp = cipher_suite.decrypt(connection_sock.recv(1024).decode())
 
     current_time = time.time()
     if received_time_stamp > (current_time + 5) or received_time_stamp < current_time:
@@ -137,7 +138,7 @@ def handle_client(connection_sock):
 
     while True:
         encrypted_message = connection_sock.recv(1024)
-        decrypted_message = client_server_session_key_cipher_suite.decrypt(encrypted_message)
+        decrypted_message = cipher_suite.decrypt(encrypted_message)
         command = decrypted_message.decode()
         command_dict = json.loads(command)
         print(f'Receiving:\n{command}')

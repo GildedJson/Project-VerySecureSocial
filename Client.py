@@ -15,29 +15,29 @@ server_address = (HOST, PORT)
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect(server_address)
 
-client_server_session_key = Fernet.generate_key()
-client_server_session_key_cipher_suite = Fernet(client_server_session_key)
-encrypted_session_key = rsa_encryptor.encrypt(client_server_session_key)
+session_key = Fernet.generate_key()
+cipher_suite = Fernet(session_key)
+encrypted_session_key = rsa_encryptor.encrypt(session_key)
 
 
 # Encrypt and send messages to the server
 def send(message):
     print(f'Sending:\n{message}')
-    encrypted_message = client_server_session_key_cipher_suite.encrypt(message.encode())
+    encrypted_message = cipher_suite.encrypt(message.encode())
     client_socket.send(encrypted_message)
 
     # Receive and decrypt messages from the server
     encrypted_response, _ = client_socket.recvfrom(1024)
-    decrypted_response = client_server_session_key_cipher_suite.decrypt(encrypted_response)
+    decrypted_response = cipher_suite.decrypt(encrypted_response)
     return decrypted_response.decode()
 
 
 print('Client Starting...')
 
-client_socket.send(client_server_session_key)
+client_socket.send(session_key)
 response, _ = client_socket.recvfrom(1024)
 time_stamp = time.time()
-client_socket.send(client_server_session_key_cipher_suite.encrypt(time_stamp))
+client_socket.send(cipher_suite.encrypt(time_stamp))
 
 while True:
     command = input().lower()
