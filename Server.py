@@ -67,8 +67,7 @@ def handle_client(connection_sock):
         if command_dict['type'] == 'signup':
             response = answer_signup(command_dict['username'], command_dict['password'], all_users, current_user)
         elif command_dict['type'] == 'login':
-            response, current_user = answer_login(command_dict['username'], command_dict['password'], all_users,
-                                                  current_user)
+            response, current_user = answer_login(command_dict['username'], command_dict['password'], all_users, current_user)
         elif current_user is None:
             response = json.dumps({'type': 'ERROR', 'message': 'Login required'})
         elif command_dict['type'] == 'online':
@@ -79,7 +78,6 @@ def handle_client(connection_sock):
             break
         print(f'Sending:\n{response}')
         connection_sock.send(response.encode())
-    connection_sock.close()
 
 
 with open('Users.txt', 'r') as file:
