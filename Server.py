@@ -23,7 +23,7 @@ welcome_sock.bind(('', PORT))
 welcome_sock.listen()
 
 
-def answer_signup(username, password, all_users, current_user):
+def answer_signup(username, password, current_user):
     if current_user is not None:
         message = {'type': 'ERROR', 'message': 'Exit required'}
     else:
@@ -39,7 +39,7 @@ def answer_signup(username, password, all_users, current_user):
     return json.dumps(message)
 
 
-def answer_login(username, password, all_users, current_user):
+def answer_login(username, password, current_user):
     if current_user is not None:
         message = {'type': 'ERROR', 'message': 'Exit required'}
     else:
@@ -57,6 +57,24 @@ def answer_login(username, password, all_users, current_user):
     return json.dumps(message), current_user
 
 
+def answer_direct(contact, direct, current_user):
+    for user in all_users['Users']:
+        if user['username'] == contact:
+            message = {'type': 'OK', 'message': 'Direct Message Delivered'}
+            all_directs.append([current_user, contact, direct])
+            break
+    else:
+        message = {'type': 'ERROR', 'message': 'Contact not found'}
+    return json.dumps(message)
+
+
+def answer_inbox(current_user):
+    message = {'type': 'OK'}
+    directs = []
+
+    return json.dumps(message)
+
+
 def handle_client(connection_sock):
     current_user = None
     while True:
@@ -65,17 +83,28 @@ def handle_client(connection_sock):
         print(f'Receiving:\n{command}')
 
         if command_dict['type'] == 'signup':
-            response = answer_signup(command_dict['username'], command_dict['password'], all_users, current_user)
+            response = answer_signup(command_dict['username'], command_dict['password'], current_user)
+
         elif command_dict['type'] == 'login':
-            response, current_user = answer_login(command_dict['username'], command_dict['password'], all_users, current_user)
+            response, current_user = answer_login(command_dict['username'], command_dict['password'], current_user)
+
         elif current_user is None:
             response = json.dumps({'type': 'ERROR', 'message': 'Login required'})
+
         elif command_dict['type'] == 'online':
             response = json.dumps({'type': 'OK', 'online users': list(set(online_users))})
+
+        elif command_dict['type'] == 'inbox':
+            response = answer_inbox(current_user)
+
+        elif command_dict['type'] == 'direct':
+            response = answer_direct(command_dict['contact'], command_dict['message'], current_user)
+
         elif command_dict['type'] == 'exit':
             online_users.remove(current_user)
             connection_sock.close()
             break
+
         print(f'Sending:\n{response}')
         connection_sock.send(response.encode())
 
@@ -87,6 +116,9 @@ online_users = []
 groups = None
 with open('Groups.txt', 'r') as file:
     groups = json.loads(file.read())
+
+# each tuple: (sender, receiver, direct message)
+all_directs = []
 
 print('Server Listening...')
 while True:
