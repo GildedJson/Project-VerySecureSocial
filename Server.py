@@ -1,5 +1,17 @@
 import json
 import socket
+from cryptography.fernet import Fernet
+
+file_enc_token = b'SoSxstZjRNRbi6JtA9yJu2RVyixvT_tWTN1jeSMq64o='
+cipher_suite = Fernet(file_enc_token)
+
+def decode_with_token(encoded_msg):
+    return encoded_msg
+    # return cipher_suite.decrypt(encoded_msg)
+
+def encode_with_token(msg):
+    return msg
+    # return cipher_suite.encrypt(msg)
 
 # create socket
 PORT = 8080
@@ -19,7 +31,7 @@ def answer_signup(username, password, all_users):
     else:
         all_users['Users'].append({'username': username, 'password': password})
         with open('Users.txt', 'w') as file:
-            file.write(json.dumps(all_users, indent=4))
+            file.write(encode_with_token(json.dumps(all_users, indent=4)))
         message = {'type': 'OK', 'message': 'Signup Successful'}
         return json.dumps(message)
     message = {'type': 'ERROR', 'message': 'Username is used'}
@@ -51,16 +63,9 @@ def answer_exit():
     online_users
 
 
-def decode_with_token(encoded_msg):
-    return encoded_msg  # TODO
-
-
-def encode_with_token(msg):
-    return msg  # TODO
-
 
 with open('Users.txt', 'r') as file:
-    all_users = json.loads(file.read())
+    all_users = decode_with_token(json.loads(file.read()))
 online_users = []
 
 groups = None
