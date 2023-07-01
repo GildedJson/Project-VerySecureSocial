@@ -23,21 +23,23 @@ encrypted_session_key = rsa_encryptor.encrypt(session_key)
 # Encrypt and send messages to the server
 def send(message):
     print(f'Sending:\n{message}')
-    encrypted_message = cipher_suite.encrypt(message.encode())
+    # encrypted_message = cipher_suite.encrypt(message.encode())
+    encrypted_message = message.encode()
     client_socket.send(encrypted_message)
 
     # Receive and decrypt messages from the server
     encrypted_response, _ = client_socket.recvfrom(1024)
-    decrypted_response = cipher_suite.decrypt(encrypted_response)
+    # decrypted_response = cipher_suite.decrypt(encrypted_response)
+    decrypted_response = encrypted_response
     return decrypted_response.decode()
 
 
 print('Client Starting...')
 
-client_socket.send(session_key)
-response, _ = client_socket.recvfrom(1024)
-time_stamp = time.time()
-client_socket.send(cipher_suite.encrypt(time_stamp))
+# client_socket.send(session_key)
+# response, _ = client_socket.recvfrom(1024)
+# time_stamp = time.time()
+# client_socket.send(cipher_suite.encrypt(time_stamp))
 
 while True:
     command = input().lower()
