@@ -1,8 +1,10 @@
 import json
 import socket
 import time
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
 
-rsa_public_key = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCFwca3W8bscbsDJUptQ/RpVhkwE5rxBeKUCGr0akuaIcQetXlVIiK+2wJv67+tv1VgNgIEejj/fXcUA9glnz8mfKn05EHQ9z+5ML3FjAjtA+TRvHJxqUgjOs+y06vyRe2rqd8UdsEX1f5I/IuKPQXW4joY3wrhIEDvPTA42Ib2kwIDAQAB'
+rsa_public_key = '-----BEGIN PUBLIC KEY-----\nMIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgGWy3cMPvRGr7rw2rKDT0uQzJBxX\nMZIBk8FCsSSU9Mu/Q3GqFZH+oKIO/LX4obBzfjm2WMfvdMe6nI5+ISVXkfEeXTkV\nyhyvXGJvqd6F+QueQBNcC1j13gUwsVtNvECSXftpx+hwr4GGNyls46dQEFCluy0W\n+JG1r7Q6F0kR7yfJAgMBAAE=\n-----END PUBLIC KEY-----'
 
 HOST, PORT = 'localhost', 8080
 server = (HOST, PORT)
