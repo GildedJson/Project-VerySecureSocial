@@ -16,13 +16,13 @@ rsa_decryptor = PKCS1_OAEP.new(rsa_private_RsaKey)
 
 
 def decode_with_token(encoded_msg):
-    return encoded_msg
-    # return cipher_suite.decrypt(encoded_msg)
+    # return encoded_msg
+    return file_cipher_suite.decrypt(encoded_msg.encode()).decode()
 
 
 def encode_with_token(msg):
-    return msg
-    # return cipher_suite.encrypt(msg)
+    # return msg
+    return file_cipher_suite.encrypt(msg.encode()).decode()
 
 
 def exist_user(username):
@@ -205,11 +205,11 @@ def handle_client(connection_sock):
 
 
 with open('Users.txt', 'r') as file:
-    all_users = decode_with_token(json.loads(file.read()))
+    all_users = json.loads(decode_with_token(file.read()))
 online_users = []
 
 with open('Groups.txt', 'r') as file:
-    groups = json.loads(file.read())
+    groups = json.loads(decode_with_token(file.read()))
 
 # each tuple: (sender, receiver, direct message)
 all_directs = []
