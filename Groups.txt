@@ -1,6 +1,20 @@
 {
-	"Group1": {
-		"admin": "aaa",
-		"members": ["aaa", "bbb"]
-	}
+    "g1": {
+        "admin": "a",
+        "members": [
+            "a"
+        ]
+    },
+    "g2": {
+        "admin": "c",
+        "members": [
+            "c"
+        ]
+    },
+    "g3": {
+        "admin": "a",
+        "members": [
+            "a"
+        ]
+    }
 }
