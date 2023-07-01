@@ -62,8 +62,8 @@ while True:
     elif command_parts[0] == 'add' and len(command_parts) == 3:
         message_to_send = {'type': 'add', 'contact': command_parts[1], 'group': command_parts[2]}
 
-    elif command_parts[0] == 'msgg' and len(command_parts) >= 3:
-        message_to_send = {'type': 'msgg', 'group': command_parts[1], 'msg': ' '.join(command_parts[2:]), }
+    elif command_parts[0] == 'broadcast' and len(command_parts) >= 3:
+        message_to_send = {'type': 'broadcast', 'group': command_parts[1], 'message': ' '.join(command_parts[2:]), }
 
     elif command_parts[0] == 'direct' and len(command_parts) >= 3:
         message_to_send = {'type': 'direct', 'contact': command_parts[1], 'message': ' '.join(command_parts[2:]), }

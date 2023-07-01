@@ -81,6 +81,15 @@ def answer_inbox(current_user):
     for direct in all_directs:
         if direct[1] == current_user:
             directs.append({'sender': direct[0], 'direct': direct[2]})
+    user_groups = []
+    for group in list(groups.keys()):
+        if current_user in groups[group]['members']:
+            user_groups.append(group)
+    group_messages = []
+    for group_message in all_group_messages:
+        if group_message[1] in user_groups:
+            group_messages.append({'sender': group_message[0], 'group': group_message[1], 'message': group_message[2]})
+    message['group messages'] = group_messages
     message['directs'] = directs
     return json.dumps(message)
 
@@ -117,6 +126,18 @@ def answer_add(contact, group, current_user):
         message = {'type': 'OK', 'message': 'Contact Added to Group'}
 
     return json.dumps(message)
+
+
+def answer_broadcast(group, message, current_user):
+    if group not in list(groups.keys()):
+        response = {'type': 'ERROR', 'message': 'Group not Found'}
+    elif current_user not in groups[group]['members']:
+        response = {'type': 'ERROR', 'message': 'You are not in this Group'}
+    else:
+        response = {'type': 'OK', 'message': 'Message Delivered to Group'}
+        all_group_messages.append([current_user, group, message])
+
+    return json.dumps(response)
 
 
 def handle_client(connection_sock):
@@ -171,6 +192,9 @@ def handle_client(connection_sock):
         elif command_dict['type'] == 'add':
             response = answer_add(command_dict['contact'], command_dict['group'], current_user)
 
+        elif command_dict['type'] == 'broadcast':
+            response = answer_broadcast(command_dict['group'], command_dict['message'], current_user)
+
         elif command_dict['type'] == 'exit':
             online_users.remove(current_user)
             connection_sock.close()
@@ -189,6 +213,8 @@ with open('Groups.txt', 'r') as file:
 
 # each tuple: (sender, receiver, direct message)
 all_directs = []
+# each tuple: (sender, group, message)
+all_group_messages = []
 
 # Create a socket and wrap it with SSL/TLS
 PORT = 8080

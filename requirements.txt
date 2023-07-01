@@ -1,2 +1,2 @@
-cryptography
 pycryptodome
+cryptography~=41.0.1
