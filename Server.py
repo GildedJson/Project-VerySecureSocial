@@ -1,6 +1,7 @@
 import json
 import socket
 from cryptography.fernet import Fernet
+import threading
 
 file_enc_token = b'SoSxstZjRNRbi6JtA9yJu2RVyixvT_tWTN1jeSMq64o='
 cipher_suite = Fernet(file_enc_token)
@@ -13,14 +14,9 @@ def encode_with_token(msg):
     return msg
     # return cipher_suite.encrypt(msg)
 
-# create socket
 PORT = 8080
 welcome_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# bind socket to local port
 welcome_sock.bind(('', PORT))
-
-# server begins listening for incoming TCP requests
 welcome_sock.listen()
 
 
@@ -55,14 +51,29 @@ def answer_login(username, password, all_users):
         return json.dumps(message)
 
 
-def answer_online():
-    return json.dumps({'type': 'OK', 'online users': list(set(online_users))})
-
-
 def answer_exit():
     online_users
 
 
+def handle_client(connection_sock):
+    while True:
+        command = connection_sock.recv(1024).decode()
+        command_dict = json.loads(command)
+        print(f'Receiving:\n{command}')
+
+        if command_dict['type'] == 'signup':
+            response = answer_signup(command_dict['username'], command_dict['password'], all_users)
+        elif command_dict['type'] == 'login':
+            response = answer_login(command_dict['username'], command_dict['password'], all_users)
+        elif command_dict['type'] == 'online':
+            response = json.dumps({'type': 'OK', 'online users': list(set(online_users))})
+        elif command_dict['type'] == 'exit':
+            connection_sock.close()
+            answer_exit()
+            break
+        print(f'Sending:\n{response}')
+        connection_sock.send(response.encode())
+    connection_sock.close()
 
 with open('Users.txt', 'r') as file:
     all_users = decode_with_token(json.loads(file.read()))
@@ -75,22 +86,7 @@ with open('Groups.txt', 'r') as file:
 print('Server Listening...')
 while True:
     connection_sock, client = welcome_sock.accept()
-    while True:
-        command = connection_sock.recv(1024).decode()
-        command_dict = json.loads(command)
-        print(f'Receiving:\n{command}')
+    thread = threading.Thread(target=handle_client, args=(connection_sock,))
+    thread.start()
 
-        if command_dict['type'] == 'signup':
-            response = answer_signup(command_dict['username'], command_dict['password'], all_users)
-        elif command_dict['type'] == 'login':
-            response = answer_login(command_dict['username'], command_dict['password'], all_users)
-        elif command_dict['type'] == 'online':
-            print(online_users)
-            response = answer_online()
-        elif command_dict['type'] == 'exit':
-            connection_sock.close()
-            answer_exit()
-            break
-        print(f'Sending:\n{response}')
-        connection_sock.send(response.encode())
-    connection_sock.close()
+

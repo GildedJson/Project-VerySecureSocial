@@ -39,6 +39,9 @@ while True:
         message_to_send = {'type': 'msgg', 'contact': command_parts[1], 'msg': ' '.join(command_parts[2:]), }
     elif command_parts[0] == 'exit' and len(command_parts) == 1:
         message_to_send = {'type': 'exit'}
+    else:
+        print('Invalid Command')
+        continue
     answer = send(json.dumps(message_to_send))
     print(f'Receiving:\n{answer}')
 
