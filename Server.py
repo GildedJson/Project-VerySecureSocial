@@ -79,6 +79,20 @@ def answer_inbox(current_user):
     return json.dumps(message)
 
 
+def answer_new_group(name, current_user):
+    groups_name = list(groups.keys())
+    for group in groups_name:
+        if group == name:
+            message = {'type': 'ERROR', 'message': 'Name is already used'}
+            break
+    else:
+        groups[name] = {'admin': current_user, 'members': [current_user]}
+        with open('Groups.txt', 'w') as file:
+            file.write(encode_with_token(json.dumps(groups, indent=4)))
+        message = {'type': 'OK', 'message': 'Group Created'}
+    return json.dumps(message)
+
+
 def handle_client(connection_sock):
     current_user = None
     while True:
@@ -104,6 +118,9 @@ def handle_client(connection_sock):
         elif command_dict['type'] == 'direct':
             response = answer_direct(command_dict['contact'], command_dict['message'], current_user)
 
+        elif command_dict['type'] == 'new group':
+            response = answer_new_group(command_dict['name'], current_user)
+
         elif command_dict['type'] == 'exit':
             online_users.remove(current_user)
             connection_sock.close()
@@ -117,7 +134,6 @@ with open('Users.txt', 'r') as file:
     all_users = decode_with_token(json.loads(file.read()))
 online_users = []
 
-groups = None
 with open('Groups.txt', 'r') as file:
     groups = json.loads(file.read())
 
