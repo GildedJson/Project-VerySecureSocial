@@ -1,1 +1,3 @@
 cryptography
+pycryptodome
+threading
