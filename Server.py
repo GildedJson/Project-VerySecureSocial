@@ -72,7 +72,10 @@ def answer_direct(contact, direct, current_user):
 def answer_inbox(current_user):
     message = {'type': 'OK'}
     directs = []
-
+    for direct in all_directs:
+        if direct[1] == current_user:
+            directs.append({'sender': direct[0], 'direct': direct[2]})
+    message['directs'] = directs
     return json.dumps(message)
 
 
