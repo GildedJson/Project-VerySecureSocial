@@ -26,9 +26,12 @@ def send(message):
 
 print('Client Starting...')
 client_server_session_key = Fernet.generate_key()
+client_server_session_key_cipher_suite = Fernet(client_server_session_key)
 encrypted_session_key = rsa_encryptor.encrypt(client_server_session_key)
 sock.send(client_server_session_key)
 response, _ = sock.recvfrom(1024)
+time_stamp = time.time()
+sock.send(client_server_session_key_cipher_suite.encrypt(time_stamp))
 
 while True:
     command = input().lower()

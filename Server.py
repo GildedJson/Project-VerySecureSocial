@@ -1,5 +1,6 @@
 import json
 import socket
+import time
 from cryptography.fernet import Fernet
 import threading
 from Crypto.PublicKey import RSA
@@ -99,6 +100,18 @@ def answer_new_group(name, current_user):
 
 def handle_client(connection_sock):
     current_user = None
+    client_server_session_key = rsa_decryptor.decrypt(connection_sock.recv(1024).decode())
+    client_server_session_key_cipher_suite = Fernet(client_server_session_key)
+    connection_sock.send('send encoded timestamp'.encode())
+    received_time_stamp = client_server_session_key_cipher_suite.decrypt(connection_sock.recv(1024).decode())
+    
+    current_time = time.time()
+    if received_time_stamp > (current_time + 5) or received_time_stamp < current_time:
+        print('Replay attack!!!')
+        connection_sock.close()
+        return
+
+
     while True:
         command = connection_sock.recv(1024).decode()
         command_dict = json.loads(command)
