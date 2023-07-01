@@ -3,12 +3,16 @@ import socket
 import time
 from cryptography.fernet import Fernet
 import threading
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
 import ssl
 
 file_enc_token = b'SoSxstZjRNRbi6JtA9yJu2RVyixvT_tWTN1jeSMq64o='
 file_cipher_suite = Fernet(file_enc_token)
 
-rsa_private_key = 'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAIXBxrdbxuxxuwMlSm1D9GlWGTATmvEF4pQIavRqS5ohxB61eVUiIr7bAm/rv62/VWA2AgR6OP99dxQD2CWfPyZ8qfTkQdD3P7kwvcWMCO0D5NG8cnGpSCM6z7LTq/JF7aup3xR2wRfV/kj8i4o9BdbiOhjfCuEgQO89MDjYhvaTAgMBAAECgYAzUcLlrQ/ovkYrkc45mB4ZoFAvswX6vfBOLeCjgHkbXSM7SRORh3RfV/ZabNBxYHzoWjBx+VcPJ9tdUZBH9w6qLDMzY/6jYjUbLzsd43bQCDaJckeqpSdBH/b3zcqdIY9VHV0rjN61cGxypwNHmcOhfuaempbOs13tIONK0sK28QJBAN6YNumi45dpgx+uJzILArMq7JHHQhkahNdwQF4bOAn7kd+++72xFmSc1ermLhgM9k8e2KP4VkgQTP1OTn97ZNkCQQCZ1InUhf2Ap7iSpB3fSK3cT7YaHQJ0B2WGfGoNXoan2+t1igUiZFoGp6gTkiHOoAu57NyBl3jaXMDDhJRUFONLAkBpKjsPaRDj8UqtBgeoogEVixsXyK9W0uueKX+PtoZkWQHTVxTyyx7MTDjY8QUoAb/BI86wsVx6UZE+P+fgXPkJAkBhX+2jjvGqWAD5KlQSfEI5/GdMXmKoKep1WBoVvmlEpmyE6cpYO+fU4Jn/UXh/AEaL+ciXa9e/egk3epweIV7DAkEAv5svnZrizKGMWMD3rm3oBD921LhjI+rfCoWY5XulnNizCfbfRrqC0U1vqEkwxGQW5okeassLdwPT9iskaC/lKw=='
+rsa_private_key = '-----BEGIN RSA PRIVATE KEY-----\nMIICWgIBAAKBgGWy3cMPvRGr7rw2rKDT0uQzJBxXMZIBk8FCsSSU9Mu/Q3GqFZH+\noKIO/LX4obBzfjm2WMfvdMe6nI5+ISVXkfEeXTkVyhyvXGJvqd6F+QueQBNcC1j1\n3gUwsVtNvECSXftpx+hwr4GGNyls46dQEFCluy0W+JG1r7Q6F0kR7yfJAgMBAAEC\ngYAmN/r5FFAUdQ2p884aPqCxm7qFYAtD+I3DgkG6IrSAYWeCLs4eaJeLb6Bu7not\nKqoUHD/vG0FC0hGFx0bDls5EWOaUC06rchnouyizPcTbmVdlRgmZDcs+7hCqoZhk\nsaDbJHGfuVyCBsZR7oT02B+DEvroDU4rQT14h0/kKCQpAQJBAMA2xl5t7s04N+qW\n33bbfIZOYB6WteZ+9xkjfeEoE5XjCOL15H0RClzfNpluNFasinJxQ2nGQqh/F+0n\nj42WSiECQQCHcoOJC9g6CrEH9urTs24JqZln5Yx6yvNC3wbCZLu9nDDI+3H27AX5\nvqLqq5lxRfjLYKpc619jFJcNvtNDYTipAkArKGFT9IUI6RWNA8E7E78a/OASHi7L\niTh8GX77Hh9/qRFmvGVIO5pDDg9ZVehEicswNQQ47L4szRSXOCnAVb1hAkATqsEG\nqT2gT+UcrvGyA5+6r3Gi8GXRfp6L2y50E4RfJ8q9pCUMIYFMni2xvXDuTaaugT67\nd0HGdTrpuAedBQThAkBsgN3IhDw44N95nZHGIdSCZHsC64Q3QQ2eif5o7yWu0iSS\nEd9lJHOZORxi42Oss4Xlj9k5EQdRybDdi5jmLjSg\n-----END RSA PRIVATE KEY-----'
+rsa_private_RsaKey = RSA.import_key(rsa_private_key)
+rsa_decryptor = PKCS1_OAEP.new(rsa_private_RsaKey)
 
 
 
@@ -114,8 +118,8 @@ def handle_client(connection_sock):
     current_user = None
     ssl_socket = ssl_context.wrap_socket(client_socket, server_side=True)
 
-    # Receive the encryption key from the client
-    client_key = ssl_socket.recv(32)
+    # # Receive the encryption key from the client
+    # client_key = ssl_socket.recv(32)
 
     client_server_session_key = rsa_decryptor.decrypt(connection_sock.recv(1024).decode())
     client_server_session_key_cipher_suite = Fernet(client_server_session_key)
