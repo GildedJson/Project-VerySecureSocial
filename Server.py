@@ -8,6 +8,7 @@ cipher_suite = Fernet(file_enc_token)
 
 rsa_private_key = 'MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAIXBxrdbxuxxuwMlSm1D9GlWGTATmvEF4pQIavRqS5ohxB61eVUiIr7bAm/rv62/VWA2AgR6OP99dxQD2CWfPyZ8qfTkQdD3P7kwvcWMCO0D5NG8cnGpSCM6z7LTq/JF7aup3xR2wRfV/kj8i4o9BdbiOhjfCuEgQO89MDjYhvaTAgMBAAECgYAzUcLlrQ/ovkYrkc45mB4ZoFAvswX6vfBOLeCjgHkbXSM7SRORh3RfV/ZabNBxYHzoWjBx+VcPJ9tdUZBH9w6qLDMzY/6jYjUbLzsd43bQCDaJckeqpSdBH/b3zcqdIY9VHV0rjN61cGxypwNHmcOhfuaempbOs13tIONK0sK28QJBAN6YNumi45dpgx+uJzILArMq7JHHQhkahNdwQF4bOAn7kd+++72xFmSc1ermLhgM9k8e2KP4VkgQTP1OTn97ZNkCQQCZ1InUhf2Ap7iSpB3fSK3cT7YaHQJ0B2WGfGoNXoan2+t1igUiZFoGp6gTkiHOoAu57NyBl3jaXMDDhJRUFONLAkBpKjsPaRDj8UqtBgeoogEVixsXyK9W0uueKX+PtoZkWQHTVxTyyx7MTDjY8QUoAb/BI86wsVx6UZE+P+fgXPkJAkBhX+2jjvGqWAD5KlQSfEI5/GdMXmKoKep1WBoVvmlEpmyE6cpYO+fU4Jn/UXh/AEaL+ciXa9e/egk3epweIV7DAkEAv5svnZrizKGMWMD3rm3oBD921LhjI+rfCoWY5XulnNizCfbfRrqC0U1vqEkwxGQW5okeassLdwPT9iskaC/lKw=='
 
+
 def decode_with_token(encoded_msg):
     return encoded_msg
     # return cipher_suite.decrypt(encoded_msg)
@@ -24,14 +25,18 @@ welcome_sock.bind(('', PORT))
 welcome_sock.listen()
 
 
+def exist_user(username):
+    for user in all_users['Users']:
+        if user['username'] == username:
+            return True
+    return False
+
 def answer_signup(username, password, current_user):
     if current_user is not None:
-        message = {'type': 'ERROR', 'message': 'Exit required'}
+        message = {'type': 'ERROR', 'message': 'Exit Required'}
     else:
-        for user in all_users['Users']:
-            if user['username'] == username:
-                message = {'type': 'ERROR', 'message': 'Username is used'}
-                break
+        if exist_user(username):
+            message = {'type': 'ERROR', 'message': 'Username is Used'}
         else:
             all_users['Users'].append({'username': username, 'password': password})
             with open('Users.txt', 'w') as file:
@@ -42,7 +47,7 @@ def answer_signup(username, password, current_user):
 
 def answer_login(username, password, current_user):
     if current_user is not None:
-        message = {'type': 'ERROR', 'message': 'Exit required'}
+        message = {'type': 'ERROR', 'message': 'Exit Required'}
     else:
         for user in all_users['Users']:
             if user['username'] == username:
@@ -51,10 +56,10 @@ def answer_login(username, password, current_user):
                     current_user = username
                     online_users.append(username)
                 else:
-                    message = {'type': 'ERROR', 'message': 'Password is not correct'}
+                    message = {'type': 'ERROR', 'message': 'Password is not Correct'}
                 break
         else:
-            message = {'type': 'ERROR', 'message': 'Username not found'}
+            message = {'type': 'ERROR', 'message': 'Username not Found'}
     return json.dumps(message), current_user
 
 
@@ -65,7 +70,7 @@ def answer_direct(contact, direct, current_user):
             all_directs.append([current_user, contact, direct])
             break
     else:
-        message = {'type': 'ERROR', 'message': 'Contact not found'}
+        message = {'type': 'ERROR', 'message': 'Contact not Found'}
     return json.dumps(message)
 
 
@@ -83,13 +88,33 @@ def answer_new_group(name, current_user):
     groups_name = list(groups.keys())
     for group in groups_name:
         if group == name:
-            message = {'type': 'ERROR', 'message': 'Name is already used'}
+            message = {'type': 'ERROR', 'message': 'Name is already Used'}
             break
     else:
         groups[name] = {'admin': current_user, 'members': [current_user]}
         with open('Groups.txt', 'w') as file:
             file.write(encode_with_token(json.dumps(groups, indent=4)))
         message = {'type': 'OK', 'message': 'Group Created'}
+    return json.dumps(message)
+
+
+def answer_add(contact, group, current_user):
+    if not exist_user(contact):
+        message = {'type': 'ERROR', 'message': 'Contact not Found'}
+    elif group not in list(groups.keys()):
+        message = {'type': 'ERROR', 'message': 'Group not Found'}
+    elif groups[group]['admin'] != current_user:
+        message = {'type': 'ERROR', 'message': 'Group is not Yours'}
+    elif contact in groups[group]['members']:
+        message = {'type': 'ERROR', 'message': 'Contact is already in Group'}
+    elif contact not in online_users:
+        message = {'type': 'ERROR', 'message': 'Contact is Offline'}
+    else:
+        groups[group]['members'].append(contact)
+        with open('Groups.txt', 'w') as file:
+            file.write(encode_with_token(json.dumps(groups, indent=4)))
+        message = {'type': 'OK', 'message': 'Contact Added to Group'}
+
     return json.dumps(message)
 
 
@@ -120,6 +145,9 @@ def handle_client(connection_sock):
 
         elif command_dict['type'] == 'new group':
             response = answer_new_group(command_dict['name'], current_user)
+
+        elif command_dict['type'] == 'add':
+            response = answer_add(command_dict['contact'], command_dict['group'], current_user)
 
         elif command_dict['type'] == 'exit':
             online_users.remove(current_user)

@@ -37,6 +37,9 @@ while True:
     elif command_parts[0] == 'new_group' and len(command_parts) == 2:
         message_to_send = {'type': 'new group', 'name': command_parts[1], }
 
+    elif command_parts[0] == 'add' and len(command_parts) == 3:
+        message_to_send = {'type': 'add', 'contact': command_parts[1], 'group': command_parts[2]}
+
     elif command_parts[0] == 'msgg' and len(command_parts) >= 3:
         message_to_send = {'type': 'msgg', 'group': command_parts[1], 'msg': ' '.join(command_parts[2:]), }
 
