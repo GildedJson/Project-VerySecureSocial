@@ -9,6 +9,8 @@ file_enc_token = b'SoSxstZjRNRbi6JtA9yJu2RVyixvT_tWTN1jeSMq64o='
 cipher_suite = Fernet(file_enc_token)
 
 rsa_private_key = '-----BEGIN RSA PRIVATE KEY-----\nMIICWgIBAAKBgGWy3cMPvRGr7rw2rKDT0uQzJBxXMZIBk8FCsSSU9Mu/Q3GqFZH+\noKIO/LX4obBzfjm2WMfvdMe6nI5+ISVXkfEeXTkVyhyvXGJvqd6F+QueQBNcC1j1\n3gUwsVtNvECSXftpx+hwr4GGNyls46dQEFCluy0W+JG1r7Q6F0kR7yfJAgMBAAEC\ngYAmN/r5FFAUdQ2p884aPqCxm7qFYAtD+I3DgkG6IrSAYWeCLs4eaJeLb6Bu7not\nKqoUHD/vG0FC0hGFx0bDls5EWOaUC06rchnouyizPcTbmVdlRgmZDcs+7hCqoZhk\nsaDbJHGfuVyCBsZR7oT02B+DEvroDU4rQT14h0/kKCQpAQJBAMA2xl5t7s04N+qW\n33bbfIZOYB6WteZ+9xkjfeEoE5XjCOL15H0RClzfNpluNFasinJxQ2nGQqh/F+0n\nj42WSiECQQCHcoOJC9g6CrEH9urTs24JqZln5Yx6yvNC3wbCZLu9nDDI+3H27AX5\nvqLqq5lxRfjLYKpc619jFJcNvtNDYTipAkArKGFT9IUI6RWNA8E7E78a/OASHi7L\niTh8GX77Hh9/qRFmvGVIO5pDDg9ZVehEicswNQQ47L4szRSXOCnAVb1hAkATqsEG\nqT2gT+UcrvGyA5+6r3Gi8GXRfp6L2y50E4RfJ8q9pCUMIYFMni2xvXDuTaaugT67\nd0HGdTrpuAedBQThAkBsgN3IhDw44N95nZHGIdSCZHsC64Q3QQ2eif5o7yWu0iSS\nEd9lJHOZORxi42Oss4Xlj9k5EQdRybDdi5jmLjSg\n-----END RSA PRIVATE KEY-----'
+rsa_private_RsaKey = RSA.import_key(rsa_private_key)
+rsa_decryptor = PKCS1_OAEP.new(rsa_private_RsaKey)
 
 def decode_with_token(encoded_msg):
     return encoded_msg
