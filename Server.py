@@ -6,10 +6,12 @@ file_enc_token = b'SoSxstZjRNRbi6JtA9yJu2RVyixvT_tWTN1jeSMq64o='
 cipher_suite = Fernet(file_enc_token)
 
 def decode_with_token(encoded_msg):
-    return cipher_suite.decrypt(encoded_msg)
+    return encoded_msg
+    # return cipher_suite.decrypt(encoded_msg)
 
 def encode_with_token(msg):
-    return cipher_suite.encrypt(msg)
+    return msg
+    # return cipher_suite.encrypt(msg)
 
 
 # create socket
