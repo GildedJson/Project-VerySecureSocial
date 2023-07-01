@@ -2,6 +2,8 @@ import json
 import socket
 import time
 
+rsa_public_key = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCFwca3W8bscbsDJUptQ/RpVhkwE5rxBeKUCGr0akuaIcQetXlVIiK+2wJv67+tv1VgNgIEejj/fXcUA9glnz8mfKn05EHQ9z+5ML3FjAjtA+TRvHJxqUgjOs+y06vyRe2rqd8UdsEX1f5I/IuKPQXW4joY3wrhIEDvPTA42Ib2kwIDAQAB'
+
 HOST, PORT = 'localhost', 8080
 server = (HOST, PORT)
 
