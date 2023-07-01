@@ -5,10 +5,6 @@ import time
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 
-# Generate random encryption key
-key = Fernet.generate_key()
-cipher_suite = Fernet(key)
-
 rsa_public_key = '-----BEGIN PUBLIC KEY-----\nMIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgGWy3cMPvRGr7rw2rKDT0uQzJBxX\nMZIBk8FCsSSU9Mu/Q3GqFZH+oKIO/LX4obBzfjm2WMfvdMe6nI5+ISVXkfEeXTkV\nyhyvXGJvqd6F+QueQBNcC1j13gUwsVtNvECSXftpx+hwr4GGNyls46dQEFCluy0W\n+JG1r7Q6F0kR7yfJAgMBAAE=\n-----END PUBLIC KEY-----'
 rsa_public_RsaKey = RSA.import_key(rsa_public_key)
 rsa_encryptor = PKCS1_OAEP.new(rsa_public_RsaKey)
@@ -19,30 +15,29 @@ server_address = (HOST, PORT)
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect(server_address)
 
-# Send the encryption key to the server
-client_socket.sendall(key)
+client_server_session_key = Fernet.generate_key()
+client_server_session_key_cipher_suite = Fernet(client_server_session_key)
+encrypted_session_key = rsa_encryptor.encrypt(client_server_session_key)
 
 
 # Encrypt and send messages to the server
 def send(message):
     print(f'Sending:\n{message}')
-    encrypted_message = cipher_suite.encrypt(message.encode())
-    client_socket.sendall(encrypted_message)
+    encrypted_message = client_server_session_key_cipher_suite.encrypt(message.encode())
+    client_socket.send(encrypted_message)
 
     # Receive and decrypt messages from the server
     encrypted_response, _ = client_socket.recvfrom(1024)
-    decrypted_response = cipher_suite.decrypt(encrypted_response)
+    decrypted_response = client_server_session_key_cipher_suite.decrypt(encrypted_response)
     return decrypted_response.decode()
 
 
 print('Client Starting...')
-client_server_session_key = Fernet.generate_key()
-client_server_session_key_cipher_suite = Fernet(client_server_session_key)
-encrypted_session_key = rsa_encryptor.encrypt(client_server_session_key)
-sock.send(client_server_session_key)
-response, _ = sock.recvfrom(1024)
+
+client_socket.send(client_server_session_key)
+response, _ = client_socket.recvfrom(1024)
 time_stamp = time.time()
-sock.send(client_server_session_key_cipher_suite.encrypt(time_stamp))
+client_socket.send(client_server_session_key_cipher_suite.encrypt(time_stamp))
 
 while True:
     command = input().lower()

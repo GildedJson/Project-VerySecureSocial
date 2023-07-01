@@ -15,7 +15,6 @@ rsa_private_RsaKey = RSA.import_key(rsa_private_key)
 rsa_decryptor = PKCS1_OAEP.new(rsa_private_RsaKey)
 
 
-
 def decode_with_token(encoded_msg):
     return encoded_msg
     # return cipher_suite.decrypt(encoded_msg)
@@ -25,6 +24,12 @@ def encode_with_token(msg):
     return msg
     # return cipher_suite.encrypt(msg)
 
+
+def exist_user(username):
+    for user in all_users['Users']:
+        if user['username'] == username:
+            return True
+    return False
 
 
 def answer_signup(username, password, current_user):
@@ -118,24 +123,21 @@ def handle_client(connection_sock):
     current_user = None
     ssl_socket = ssl_context.wrap_socket(client_socket, server_side=True)
 
-    # # Receive the encryption key from the client
-    # client_key = ssl_socket.recv(32)
-
+    # Receive the encryption key from the client
     client_server_session_key = rsa_decryptor.decrypt(connection_sock.recv(1024).decode())
     client_server_session_key_cipher_suite = Fernet(client_server_session_key)
     connection_sock.send('send encoded timestamp'.encode())
     received_time_stamp = client_server_session_key_cipher_suite.decrypt(connection_sock.recv(1024).decode())
-    
+
     current_time = time.time()
     if received_time_stamp > (current_time + 5) or received_time_stamp < current_time:
         print('Replay attack!!!')
         connection_sock.close()
         return
 
-
     while True:
         encrypted_message = ssl_socket.recv(1024)
-        decrypted_message = cipher_suite.decrypt(encrypted_message)
+        decrypted_message = client_server_session_key_cipher_suite.decrypt(encrypted_message)
         command = decrypted_message.decode()
         command_dict = json.loads(command)
         print(f'Receiving:\n{command}')
@@ -185,10 +187,6 @@ with open('Groups.txt', 'r') as file:
 # each tuple: (sender, receiver, direct message)
 all_directs = []
 
-# Generate a random encryption key
-key = Fernet.generate_key()
-cipher_suite = Fernet(key)
-
 # Create a socket and wrap it with SSL/TLS
 PORT = 8080
 HOST = 'localhost'
@@ -196,7 +194,6 @@ server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = (HOST, PORT)
 server_socket.bind(server_address)
 server_socket.listen(1)
-
 
 ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
 ssl_context.load_cert_chain(certfile='server.crt', keyfile='server.key')
