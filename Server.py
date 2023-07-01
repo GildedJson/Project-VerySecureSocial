@@ -121,7 +121,7 @@ def answer_add(contact, group, current_user):
 
 def handle_client(connection_sock):
     current_user = None
-    ssl_socket = ssl_context.wrap_socket(client_socket, server_side=True)
+    # ssl_socket = ssl_context.wrap_socket(connection_sock, server_side=True)
 
     # Receive the encryption key from the client
     client_server_session_key = rsa_decryptor.decrypt(connection_sock.recv(1024).decode())
@@ -136,7 +136,7 @@ def handle_client(connection_sock):
         return
 
     while True:
-        encrypted_message = ssl_socket.recv(1024)
+        encrypted_message = connection_sock.recv(1024)
         decrypted_message = client_server_session_key_cipher_suite.decrypt(encrypted_message)
         command = decrypted_message.decode()
         command_dict = json.loads(command)
