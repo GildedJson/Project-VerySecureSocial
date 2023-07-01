@@ -1,27 +1,34 @@
 import json
 import socket
-from cryptography.fernet import Fernet
 import time
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
+from cryptography.fernet import Fernet
 
-rsa_public_key = '-----BEGIN PUBLIC KEY-----\nMIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgGWy3cMPvRGr7rw2rKDT0uQzJBxX\nMZIBk8FCsSSU9Mu/Q3GqFZH+oKIO/LX4obBzfjm2WMfvdMe6nI5+ISVXkfEeXTkV\nyhyvXGJvqd6F+QueQBNcC1j13gUwsVtNvECSXftpx+hwr4GGNyls46dQEFCluy0W\n+JG1r7Q6F0kR7yfJAgMBAAE=\n-----END PUBLIC KEY-----'
-rsa_public_RsaKey = RSA.import_key(rsa_public_key)
-rsa_encryptor = PKCS1_OAEP.new(rsa_public_RsaKey)
+# Generate random encryption key
+key = Fernet.generate_key()
+cipher_suite = Fernet(key)
+
+rsa_public_key = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCFwca3W8bscbsDJUptQ/RpVhkwE5rxBeKUCGr0akuaIcQetXlVIiK+2wJv67+tv1VgNgIEejj/fXcUA9glnz8mfKn05EHQ9z+5ML3FjAjtA+TRvHJxqUgjOs+y06vyRe2rqd8UdsEX1f5I/IuKPQXW4joY3wrhIEDvPTA42Ib2kwIDAQAB'
 
 HOST, PORT = 'localhost', 8080
-server = (HOST, PORT)
+server_address = (HOST, PORT)
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(server)
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket.connect(server_address)
+
+# Send the encryption key to the server
+client_socket.sendall(key)
 
 
+# Encrypt and send messages to the server
 def send(message):
     print(f'Sending:\n{message}')
-    #TODO RSA maybe?
-    sock.send(message.encode())
-    response, _ = sock.recvfrom(1024)
-    return response.decode()
+    encrypted_message = cipher_suite.encrypt(message.encode())
+    client_socket.sendall(encrypted_message)
+
+    # Receive and decrypt messages from the server
+    encrypted_response, _ = client_socket.recvfrom(1024)
+    decrypted_response = cipher_suite.decrypt(encrypted_response)
+    return decrypted_response.decode()
 
 
 print('Client Starting...')
@@ -51,6 +58,9 @@ while True:
     elif command_parts[0] == 'new_group' and len(command_parts) == 2:
         message_to_send = {'type': 'new group', 'name': command_parts[1], }
 
+    elif command_parts[0] == 'add' and len(command_parts) == 3:
+        message_to_send = {'type': 'add', 'contact': command_parts[1], 'group': command_parts[2]}
+
     elif command_parts[0] == 'msgg' and len(command_parts) >= 3:
         message_to_send = {'type': 'msgg', 'group': command_parts[1], 'msg': ' '.join(command_parts[2:]), }
 
@@ -68,5 +78,5 @@ while True:
     print(f'Receiving:\n{answer}')
 
     if command_parts[0] == 'exit':
-        sock.close()
+        client_socket.close()
         break
